@@ -20,7 +20,9 @@ let disposeBrowserLive = null;
 
 /** Filters showcase models by id, label, or hosting keywords (serverless / hub). */
 function filterShowcaseModels(models, query) {
-  const q = String(query || '').trim().toLowerCase();
+  const q = String(query || '')
+    .trim()
+    .toLowerCase();
   if (!q) return models.slice();
   return models.filter((m) => {
     if (
@@ -32,7 +34,10 @@ function filterShowcaseModels(models, query) {
       return true;
     }
     if (q.includes('serverless') && m.hostedInference === true) return true;
-    if ((q.includes('hub') || q.includes('local')) && m.hostedInference === false)
+    if (
+      (q.includes('hub') || q.includes('local')) &&
+      m.hostedInference === false
+    )
       return true;
     return false;
   });
@@ -186,21 +191,18 @@ function setRoute(name, id) {
 function jobBadge(label, slice) {
   if (!slice) return '';
   const st = slice.status || 'idle';
-  const err = slice.error
-    ? ` title="${escapeHtml(slice.error)}"`
-    : '';
+  const err = slice.error ? ` title="${escapeHtml(slice.error)}"` : '';
   return `<span class="pill job-pill"${err}>${escapeHtml(label)}: ${escapeHtml(st)}</span>`;
 }
 
 /** Picks a MIME type MediaRecorder can use in this browser (prefers Opus in WebM). */
 function pickRecorderMimeType() {
-  const candidates = [
-    'audio/webm;codecs=opus',
-    'audio/webm',
-    'audio/mp4',
-  ];
+  const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'];
   for (const t of candidates) {
-    if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported?.(t)) {
+    if (
+      typeof MediaRecorder !== 'undefined' &&
+      MediaRecorder.isTypeSupported?.(t)
+    ) {
       return t;
     }
   }
@@ -541,17 +543,21 @@ async function renderLibrary() {
           Live captions via the Web Speech API while recording the same microphone audio to a file.
           Upload uses the language hint from <strong>Upload</strong> above for server ASR. Chromium-based browsers work best.
         </p>
+        
         <div id="browserLiveUnsupported" class="error" role="alert" hidden></div>
+        
+        <label class="muted" for="browserLiveLang">Speech language<label/>
+                   
         <div class="row" style="margin-top:0.75rem;flex-wrap:wrap">
-          <label class="muted">Speech language<br/>
             <select class="select" id="browserLiveLang" aria-label="Speech recognition language">
               <option value="auto">Match browser</option>
               <option value="en">English (en-US)</option>
               <option value="hi">Hindi (hi-IN)</option>
               <option value="hinglish">Hinglish (hi-IN)</option>
             </select>
-          </label>
+ 
           <div class="row" style="align-items:flex-end;gap:0.5rem">
+
             <button type="button" class="btn btn-primary" id="btnBrowserLiveStart">Start</button>
             <button type="button" class="btn" id="btnBrowserLiveStop" disabled>Stop</button>
           </div>
@@ -702,7 +708,7 @@ async function renderAsset(id) {
   };
   let errMsg = '';
   try {
-    ;[asset, runsData, hfModels] = await Promise.all([
+    [asset, runsData, hfModels] = await Promise.all([
       api.getAsset(id),
       api.getRuns(id).catch(() => ({ runs: [] })),
       api.getHfModels().catch(() => ({
@@ -879,8 +885,10 @@ async function renderAsset(id) {
           <div class="segment-time">${formatTime(seg.startMs)}</div>
           <div class="segment-fields">
             ${spk ? `<span class="pill">${spk}</span>` : ''}
-            <input type="text" class="input seg-text" data-idx="${idx}" value="${escapeHtml(seg.text || '')}" />
-          </div>
+            <div contenteditable="true" class="input seg-text" data-idx="${idx}">
+             ${escapeHtml(seg.text || '')} 
+            </div>
+            </div>
         </div>`;
       })
       .join('');
@@ -917,11 +925,15 @@ async function renderAsset(id) {
 
   app.querySelector('#btnMarkStart')?.addEventListener('click', () => {
     if (!player) return;
-    app.querySelector('#exStart').value = String(Math.floor(player.currentTime * 1000));
+    app.querySelector('#exStart').value = String(
+      Math.floor(player.currentTime * 1000),
+    );
   });
   app.querySelector('#btnMarkEnd')?.addEventListener('click', () => {
     if (!player) return;
-    app.querySelector('#exEnd').value = String(Math.floor(player.currentTime * 1000));
+    app.querySelector('#exEnd').value = String(
+      Math.floor(player.currentTime * 1000),
+    );
   });
 
   app.querySelector('#btnExport')?.addEventListener('click', async () => {
@@ -958,7 +970,8 @@ async function renderAsset(id) {
     const strategies = model ? [{ model }] : undefined;
     try {
       await api.postTranscribe(id, strategies);
-      msg.textContent = 'Transcription running on server. This page will refresh status.';
+      msg.textContent =
+        'Transcription running on server. This page will refresh status.';
       scheduleAssetPoll(id, true);
     } catch (e) {
       msg.textContent = e.message || String(e);
@@ -984,7 +997,7 @@ async function renderAsset(id) {
         startMs: seg.startMs,
         endMs: seg.endMs,
         speaker: seg.speaker,
-        text: inp ? inp.value : seg.text,
+        text: inp ? inp.innerText.trim() : seg.text,
         raw: seg.raw,
       };
     });
